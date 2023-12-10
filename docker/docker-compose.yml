@@ -1,0 +1,12 @@
+version: '3'
+services:
+  postgres_courier:
+    container_name: 'geocouriers_web'
+    restart: 'always'
+    image: geo_courier_postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=password=-FSU+^_h#S829bab
+    volumes:
+      - /data/geocouriers_web/postgres/data:/var/lib/postgresql/data
