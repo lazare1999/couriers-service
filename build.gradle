@@ -1,0 +1,77 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.5'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id 'war'
+}
+
+group = 'couriers'
+version = '0.0.1'
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    implementation(
+            "javax.validation:validation-api:2.0.1.Final",
+            'com.google.code.gson:gson:2.9.0',
+            'com.google.guava:guava:31.1-jre',
+            'io.jsonwebtoken:jjwt-api:0.11.5',
+            'javax.activation:activation:1.+',
+            'javax.persistence:javax.persistence-api:2.2',
+            'javax.xml.bind:jaxb-api:2.+',
+            'javax.xml.bind:jaxb-api:2.2.4',
+            'net.jodah:expiringmap:0.5.10',
+            'org.apache.commons:commons-lang3:3.12.0',
+            'org.flywaydb:flyway-core:8.5.10',
+            'org.jetbrains:annotations:23.0.0',
+            'org.springframework.boot:spring-boot-starter-data-jpa',
+            'org.springframework.boot:spring-boot-starter-security',
+            'org.springframework.boot:spring-boot-starter-web',
+            'org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE',
+            'org.springframework:spring-jdbc',
+            'org.xerial:sqlite-jdbc:3.+',
+//            'com.google.firebase:firebase-messaging:23.0.5',
+//            'com.google.firebase:firebase-core:21.0.0',
+            'com.google.firebase:firebase-admin:8.1.0'
+    )
+
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.24'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    testImplementation(
+            'org.apache.httpcomponents:httpclient',
+            'org.springframework.boot:spring-boot-starter-test',
+            'org.springframework.security:spring-security-test',
+    )
+
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
+            // Uncomment the next line if you want to use RSASSA-PSS (PS256, PS384, PS512) algorithms:
+            //'org.bouncycastle:bcprov-jdk15on:1.60',
+            'io.jsonwebtoken:jjwt-jackson:0.11.5' // or 'io.jsonwebtoken:jjwt-gson:0.11.2' for gson
+
+
+    runtimeOnly(
+            "org.springframework.boot:spring-boot-starter-tomcat",
+            "org.springframework.boot:spring-boot-devtools",
+            'org.postgresql:postgresql'
+    )
+
+}
+
+test {
+    useJUnitPlatform()
+}

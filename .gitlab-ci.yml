@@ -1,0 +1,85 @@
+image: docker:stable
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_BUILDKIT: 1
+  SERVICE_NAME: geocourier-service
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  CI_REGISTRY_IMAGE: dockerhub.softgen.ge/geocourier/geocourier-service
+
+cache:
+  paths:
+    - .gradle/caches
+
+
+stages:
+  - test
+  - build
+  - deploy
+
+test:
+  stage: test
+  image: gradle:7.2-jdk17
+  before_script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+  script:
+    - gradle -Dorg.gradle.daemon=false check
+  when: manual
+
+build-image:
+  stage: build
+  before_script:
+    - echo $DOCKER_REGISTRY_PASSWORD | docker login -u gitlab-runner --password-stdin $CI_REGISTRY
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE .
+    - docker push $CI_REGISTRY_IMAGE:latest
+  tags:
+    - jedi
+  only:
+    - master
+
+
+create-service:
+  stage: deploy
+  before_script:
+    - echo $DOCKER_REGISTRY_PASSWORD | docker login -u gitlab-runner --password-stdin $CI_REGISTRY
+  script:
+    - |
+      docker service create \
+       --with-registry-auth \
+       --network softgen_net2 \
+       --env spring.datasource.url=$DATABASE_URL \
+       --env spring.flyway.url=$DATABASE_URL \
+       --env spring.datasource.password=$DATABASE_PASSWORD \
+       --env spring.flyway.password=$DATABASE_PASSWORD \
+       --name $SERVICE_NAME \
+       $CI_REGISTRY_IMAGE:latest
+  tags:
+    - jedi
+  only:
+    - master
+  when: manual
+
+
+update-service:
+  stage: deploy
+  before_script:
+    - echo $DOCKER_REGISTRY_PASSWORD | docker login -u gitlab-runner --password-stdin $CI_REGISTRY
+  script:
+    - |
+      docker service update \
+      --force \
+      --with-registry-auth \
+      --update-delay 1m \
+      --update-failure-action rollback \
+      --update-order start-first \
+      --env-add spring.datasource.url=$DATABASE_URL \
+      --env-add spring.flyway.url=$DATABASE_URL \
+      --env-add spring.datasource.password=$DATABASE_PASSWORD \
+      --env-add spring.flyway.password=$DATABASE_PASSWORD \
+      --image $CI_REGISTRY_IMAGE:latest \
+      $SERVICE_NAME
+  tags:
+    - jedi
+  only:
+    - master
